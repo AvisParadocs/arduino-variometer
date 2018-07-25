@@ -32,7 +32,7 @@
 /*******************/
 /* General objects */
 /*******************/
-#define VARIOMETER_POWER_ON_DELAY 2000 
+#define VARIOMETER_POWER_ON_DELAY 2000
 
 #define VARIOMETER_STATE_INITIAL 0
 #define VARIOMETER_STATE_DATE_RECORDED 1
@@ -72,7 +72,7 @@ Vertaccel vertaccel(vertaccelSettings);
 
 unsigned long lastLowFreqUpdate = 0;
 
-#ifdef HAVE_GPS 
+#ifdef HAVE_GPS
 #define VARIOSCREEN_ALTI_ANCHOR_X 52
 #define VARIOSCREEN_ALTI_ANCHOR_Y 0
 #define VARIOSCREEN_VARIO_ANCHOR_X 52
@@ -290,11 +290,11 @@ void setup() {
   serialNmea.begin(GPS_BLUETOOTH_BAUDS, false);
 #endif //HAVE_GPS
 #endif //defined(HAVE_BLUETOOTH) || defined(HAVE_GPS)
-  
+
   /******************/
   /* get first data */
   /******************/
-  
+
   /* wait for first alti and acceleration */
   while( ! (ms5611_dataReady()
 #ifdef HAVE_ACCELEROMETER
@@ -302,7 +302,7 @@ void setup() {
 #endif //HAVE_ACCELEROMETER
             ) ) {
   }
-  
+
   /* get first data */
   ms5611_updateData();
 
@@ -316,7 +316,7 @@ void setup() {
                   POSITION_MEASURE_STANDARD_DEVIATION,
                   ACCELERATION_MEASURE_STANDARD_DEVIATION,
                   millis());
-   
+
 }
 
 #if defined(HAVE_SDCARD) && defined(HAVE_GPS)
@@ -328,7 +328,7 @@ void enableflightStartComponents(void);
 /*      LOOP      */
 /*----------------*/
 void loop() {
- 
+
   /*****************************/
   /* compute vertical velocity */
   /*****************************/

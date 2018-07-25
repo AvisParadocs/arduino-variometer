@@ -12,7 +12,7 @@ AccelCalibrator::AccelCalibrator() {
 }
 
 void AccelCalibrator::init(void) {
-  
+
   /* init the accelerometer without calibration */
   vertaccel.init();
 
@@ -26,24 +26,24 @@ void AccelCalibrator::init(void) {
 }
 
 void AccelCalibrator::reset(void) {
-  
+
   for( int i=0; i<ACCEL_CALIBRATOR_ORIENTATION_COUNT; i++ ) {
     accelListDone[i] = false;
   }
   calibrated = false;
 }
-  
+
 void AccelCalibrator::measure(void) {
 
   int16_t iaccel[3];
   int32_t iquat[4];
-    
+
   /* empty the FIFO and stabilize the accelerometer */
   unsigned long currentTime = millis();
   while( millis() - currentTime < ACCEL_CALIBRATOR_WAIT_DURATION ) {
     vertaccel.readRawAccel(iaccel, iquat);
   }
-  
+
   /* starting measures with mean filter */
   int count = 0;
   measuredAccel[0] = 0.0;
@@ -60,7 +60,7 @@ void AccelCalibrator::measure(void) {
       accelSquareMean[0] +=  (double)iaccel[0]*(double)iaccel[0];
       accelSquareMean[1] +=  (double)iaccel[1]*(double)iaccel[1];
       accelSquareMean[2] +=  (double)iaccel[2]*(double)iaccel[2];
-    
+
       count++;
     }
   }
@@ -80,7 +80,7 @@ void AccelCalibrator::measure(void) {
   measuredAccelSD += sqrt(accelSquareMean[1] - measuredAccel[1]*measuredAccel[1]);
   measuredAccelSD += sqrt(accelSquareMean[2] - measuredAccel[2]*measuredAccel[2]);
 }
-    
+
 
 int AccelCalibrator::getMeasureOrientation(void) {
 
@@ -104,10 +104,10 @@ int AccelCalibrator::getMeasureOrientation(void) {
       accelOrient[i] = 1;
     }
   }
-  
+
   /* check if we have only one non zero accel (value 0 or 1) */
   if( zeroCount != 2 ) {
-    return -1; //the orientation is ambiguous 
+    return -1; //the orientation is ambiguous
   }
 
   /* compute the position in the list */
@@ -129,9 +129,9 @@ boolean AccelCalibrator::pushMeasure(void) {
 
   /* get orientation */
   int orientPos = getMeasureOrientation();
-  if( orientPos < 0 ) 
+  if( orientPos < 0 )
     return false; //ambiguous orientation
- 
+
   /* record the value */
   /* if a value exist, record only if better standard deviation */
   if( ! accelListDone[orientPos] || ( measuredAccelSD < accelListSD[orientPos] ) ) {
@@ -155,7 +155,7 @@ boolean AccelCalibrator::canCalibrate(void) {
     }
   }
 
-  return true;  
+  return true;
 }
 
 
@@ -171,7 +171,7 @@ void AccelCalibrator::calibrate(void) {
     baseRadius += sqrt( accelList[i]*accelList[i] + accelList[i+1]*accelList[i+1] + accelList[i+2]*accelList[i+2] );
   }
   baseRadius /= (double)(3*ACCEL_CALIBRATOR_ORIENTATION_COUNT);
-  
+
 
   /****************************/
   /* make radius optimization */
@@ -182,17 +182,17 @@ void AccelCalibrator::calibrate(void) {
   double optimizationPrecision = baseRadius * ACCEL_CALIBRATOR_OPTIMIZATION_PRECISION;
   double bestDistance = 100000.0;
   double bestRadius;
-                        
+
   while( baseStep > optimizationPrecision ) {
-              
+
     double currentRadius = baseRadius - baseRadiusDrift;
     double currentDistance;
-              
+
     while( currentRadius <  baseRadius + baseRadiusDrift ) {
       computeCenter(&accelList[ACCEL_CALIBRATOR_ORIENTATION_P1*3],
 		    &accelList[ACCEL_CALIBRATOR_ORIENTATION_P2*3],
 		    &accelList[ACCEL_CALIBRATOR_ORIENTATION_P3*3],
-		    currentRadius, calibrationCenter); 
+		    currentRadius, calibrationCenter);
       currentDistance = computeDistanceVariance(accelList, calibrationCenter);
       if( currentDistance <  bestDistance ) {
 	bestDistance = currentDistance;
@@ -200,12 +200,12 @@ void AccelCalibrator::calibrate(void) {
       }
       currentRadius += baseStep;
     }
-    
+
     baseRadius = bestRadius;
     baseStep /= 10.0;
     baseRadiusDrift /= 10.0;
   }
-            
+
   /* compute center with best radius */
   computeCenter(&accelList[ACCEL_CALIBRATOR_ORIENTATION_P1*3],
 		&accelList[ACCEL_CALIBRATOR_ORIENTATION_P2*3],
@@ -216,7 +216,7 @@ void AccelCalibrator::calibrate(void) {
   for(int i = 0; i<3; i++) {
     calibration[i] = calibrationCenter[i];
   }
-  
+
   VertaccelCalibration accelCal = {{ (int16_t)(calibrationCenter[0]*(double)(1 << VERTACCEL_ACCEL_CAL_BIAS_MULTIPLIER))
 				     ,(int16_t)(calibrationCenter[1]*(double)(1 << VERTACCEL_ACCEL_CAL_BIAS_MULTIPLIER))
 				     ,(int16_t)(calibrationCenter[2]*(double)(1 << VERTACCEL_ACCEL_CAL_BIAS_MULTIPLIER)) } , 0};
@@ -238,67 +238,67 @@ void AccelCalibrator::calibratedMeasure(void) {
 
 
 /* given three vector and a radius, find the sphere's center */
-void AccelCalibrator::computeCenter(double* v1, double* v2, double* v3, double radius, double* center) {
-            
+void AccelCalibrator::computeCenter(double* v1, double* v2, double* v3, double radius, double& center) {
+
   /* compute midppoints */
   double m1[3];
   double m2[3];
-      
+
   m1[0] = (v1[0]+v2[0])/2.0;
   m1[1] = (v1[1]+v2[1])/2.0;
   m1[2] = (v1[2]+v2[2])/2.0;
   m2[0] = (v1[0]+v3[0])/2.0;
   m2[1] = (v1[1]+v3[1])/2.0;
   m2[2] = (v1[2]+v3[2])/2.0;
-      
+
   /* compute plane equations */
   double eq1[4];
   double eq2[4];
-      
+
   eq1[0] = v2[0] - v1[0];
   eq1[1] = v2[1] - v1[1];
   eq1[2] = v2[2] - v1[2];
   eq1[3] = eq1[0]*m1[0] + eq1[1]*m1[1] + eq1[2]*m1[2];
-      
+
   eq2[0] = v3[0] - v1[0];
   eq2[1] = v3[1] - v1[1];
   eq2[2] = v3[2] - v1[2];
   eq2[3] = eq2[0]*m2[0] + eq2[1]*m2[1] + eq2[2]*m2[2];
- 
+
   /* simplify equ2 */
   double fac = eq2[0]/eq1[0];
   eq2[0] -= eq1[0]*fac;
   eq2[1] -= eq1[1]*fac;
   eq2[2] -= eq1[2]*fac;
   eq2[3] -= eq1[3]*fac;
-  eq2[0] /= eq2[2]; 
+  eq2[0] /= eq2[2];
   eq2[1] /= eq2[2];
   eq2[3] /= eq2[2];
   eq2[2] /= eq2[2];
-      
+
   /* simplify equ1 */
   fac = eq1[2];
   eq1[1] -= eq2[1]*fac;
   eq1[2] -= eq2[2]*fac;
   eq1[3] -= eq2[3]*fac;
-  eq1[1] /= eq1[0]; 
+  eq1[1] /= eq1[0];
   eq1[2] /= eq1[0];
   eq1[3] /= eq1[0];
   eq1[0] /= eq1[0];
- 
+
   /* get quadratic equation */
   double q[3];
   q[0]= eq1[1]*eq1[1] + 1 + eq2[1]*eq2[1];
   q[1]= 2*eq1[1]*(v1[0]-eq1[3])-2*v1[1]+2*eq2[1]*(v1[2]-eq2[3]);
   q[2]= (v1[0]-eq1[3])*(v1[0]-eq1[3]) + v1[1]*v1[1] + (v1[2]-eq2[3])*(v1[2]-eq2[3])-radius;
-      
+
   /* solve quadratic */
   double d = q[1]*q[1] - 4*q[0]*q[2];
   double y1 = (-q[1]-sqrt(d))/(2*q[0]);
   double y2 = (-q[1]+sqrt(d))/(2*q[0]);
-      
+
   /* compute points */
-  if( -0.1 < y1 && y1 < 0.1 ) {      
+  if( -0.1 < y1 && y1 < 0.1 ) {
     center[1] = y1;
     center[0] = eq1[3]-eq1[1]*y1;
     center[2] = eq2[3]-eq2[1]*y1;
@@ -322,27 +322,27 @@ double AccelCalibrator::computeDistanceVariance(double *v, double* center) {
       pointDistance[i] = sqrt( (val[0]-center[0])*(val[0]-center[0]) + (val[1]-center[1])*(val[1]-center[1]) + (val[2]-center[2])*(val[2]-center[2]) );
     }
   }
-  
+
   /* compute mean */
   double mean = 0.0;
-  
+
   for( int i = 0; i<ACCEL_CALIBRATOR_ORIENTATION_COUNT; i++ ) {
     if( i != ACCEL_CALIBRATOR_ORIENTATION_EXCEPTION ) {
       mean += pointDistance[i];
     }
   }
   mean /= ACCEL_CALIBRATOR_ORIENTATION_COUNT - 1;
-  
+
   /* compute var */
   double var = 0.0;
-  
+
   for( int i = 0; i<ACCEL_CALIBRATOR_ORIENTATION_COUNT; i++ ) {
     if( i != ACCEL_CALIBRATOR_ORIENTATION_EXCEPTION ) {
       var += (pointDistance[i] - mean)*(pointDistance[i] - mean);
     }
   }
   var /= ACCEL_CALIBRATOR_ORIENTATION_COUNT - 1;
-  
+
   return var;
 }
 
