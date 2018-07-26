@@ -1,8 +1,14 @@
 Hi! I have a few questions about code and logic behind it. Could you help me  to understand. At the moment I on prototype stage, so its impossible to test vario in real conditions.
 
-1. What info is shown on alternate screen which calls by (VARIOMETER_ALTERNATE_PAGE_DURATION)? On my screen it shows weird numbers which don't look like coordinates or time.
+1. Correct me if I didn't understand the correct way to setup a firmware. First I upload a variometer.ino then accel_calibration.ino and performing calibration through serial monitor.
+(I've checked VarioSettings.h, set there #define IMU_CALIBRATION_IN_EEPROM and commented #define IMU_GYRO_CAL_BIAS and etc.)
 
-2. What logic is behind the VARIOMETER_NEAR_CLIMBING_SENSITIVITY and VARIOMETER_ENABLE_NEAR_CLIMBING_BEEP parameters? Ive tested them  and didn't noticed any changes.
+2. What info is shown on alternate screen which calls by (VARIOMETER_ALTERNATE_PAGE_DURATION)? On my screen it shows weird numbers which don't look like coordinates or time.
 
-3. Correct me if I didn't understand the correct way to setup a firmware. First I upload a variometer.ino then accel_calibration.ino and performing calibration through serial monitor.
-(I've checked VarioSettings.h, set there #define IMU_CALIBRATION_IN_EEPROM and commented #define IMU_GYRO_CAL_BIAS and etc.) If I upload SetVarioParameters.ino on any stage, device didn't respond at all. 
+3. What logic is behind the VARIOMETER_NEAR_CLIMBING_SENSITIVITY and VARIOMETER_ENABLE_NEAR_CLIMBING_BEEP parameters? Ive tested them  and didn't noticed any changes.
+
+4. If I upload SetVarioParameters.ino to update settings on any stage, device didn't respond at all bs it normal? So I forced to reupload whole variometer.ino every time I change settings in VarioSettings.h.
+
+5. How exactly accelerometer influence a vario calculation? Without accelerometer vario still looks decently precise and responsive.
+
+Its still an impressive project which accumulates all needed functions to make powerful flightcomputer on smarphone. Good job! Cheers!
